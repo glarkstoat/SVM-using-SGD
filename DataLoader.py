@@ -21,7 +21,7 @@ class DataLoader:
                                             train_size=train_split_size,
                                             random_state=42) # to keep results consistent
         if normalize == True:
-            xtrain = StandardScaler().fit_transform(xtrain)
+            xtrain, xtest = self.normalization(xtrain, xtest)
 
         return xtrain, xtest, ytrain, ytest
 
@@ -37,8 +37,8 @@ class DataLoader:
                                             train_size=train_split_size,
                                             random_state=42) 
         if normalize == True:
-            xtrain = StandardScaler().fit_transform(xtrain)
-            
+            xtrain, xtest = self.normalization(xtrain, xtest)
+
         return xtrain, xtest, ytrain, ytest
 
     def get_MNIST(self, normalize=True):
@@ -46,11 +46,24 @@ class DataLoader:
             the test-labels of the MNIST dataset.  """
         
         mnist = np.load(f"{self.path}mnist.npz")
-        xtrain = mnist['train']
+        
+        # Data is transposed because it is stored (features, samples)
+        # and not like toydata sets (samples, features)
+        xtrain = mnist['train'].T
+        xtest = mnist['test'].T
         
         if normalize == True:
-            xtrain = StandardScaler().fit_transform(xtrain)
-        
-        return xtrain, mnist['test'], mnist['train_labels'], mnist['test_labels']
+            xtrain, xtest = self.normalization(xtrain, xtest)
 
+        return xtrain, xtest, mnist['train_labels'], mnist['test_labels']
+
+    def normalization(self, train, test):
+        """ Fits a normalization model with xtrain and 
+            applies transformation to both sets. """
+            
+        scaler = StandardScaler().fit(train)
+        train = scaler.transform(train)
+        test = scaler.transform(test)
+
+        return train, test
 #%%
