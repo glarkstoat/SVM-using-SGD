@@ -1,4 +1,4 @@
-from DataLoader import DataLoader
+from DataLoader import *
 
 class LinearSVM:
     """  
