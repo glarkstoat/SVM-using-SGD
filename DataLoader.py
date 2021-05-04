@@ -14,8 +14,8 @@ class DataLoader:
             tiny toydata set. """
 
         tiny = pd.read_csv(f"{self.path}toydata_tiny.csv", header=0)
-        features = tiny[['x1', 'x2']]
-        labels = tiny['y']
+        features = np.array(tiny[['x1', 'x2']])
+        labels = np.array(tiny['y'])
         
         xtrain, xtest, ytrain, ytest = train_test_split(features, labels, 
                                             train_size=train_split_size,
@@ -30,8 +30,8 @@ class DataLoader:
             large toydata set. """
         
         large = pd.read_csv(f"{self.path}toydata_large.csv", header=0)
-        features = large.iloc[:, :8]
-        labels = large['y']
+        features = np.array(large.iloc[:, :8])
+        labels = np.array(large['y'])
         
         xtrain, xtest, ytrain, ytest = train_test_split(features, labels, 
                                             train_size=train_split_size,
