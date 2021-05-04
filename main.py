@@ -5,7 +5,7 @@ MMD-Assignment #2: Support Vector Machines using SGD
 Team: Emin Guliev, Justus Rass & Christian Wiskott.
 '''
 
-from LinearSVM import LinearSVM
+from LinearSVM import *
 import datetime
 
 print("##### Phase-1: #####\n")
