@@ -42,7 +42,7 @@ class DataLoader:
         return xtrain, xtest, ytrain, ytest
 
     def get_MNIST(self, normalize=True):
-        """ Returns the training, training-labels, the test and 
+        """ Returns the training-features, the test-features, training-labels and 
             the test-labels of the MNIST dataset.  """
         
         mnist = np.load(f"{self.path}mnist.npz")
@@ -51,6 +51,6 @@ class DataLoader:
         if normalize == True:
             xtrain = StandardScaler().fit_transform(xtrain)
         
-        return xtrain, mnist['train_labels'], mnist['test'], mnist['test_labels']
+        return xtrain, mnist['test'], mnist['train_labels'], mnist['test_labels']
 
 #%%
