@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import numpy as np
+import random
 
 
 class SGD:
@@ -16,16 +17,17 @@ class SGD:
         result += sum(self.weight[i + 1] * features[i] for i in range(len(features) - 1))
         return result
 
-    def train(self, xtrain, ytrain, epoch_count):
+    def train(self, xtrain, ytrain, batch_size, epoch_count):
         if len(xtrain) != len(ytrain):
             print("Check your training data dimensions.")
         data_count = len(xtrain)
         for epoch in range(epoch_count):
             error = 0
             # todo should we iterate over all items??
-            for i in range(data_count):
-                itemx = xtrain[i]
-                itemy = ytrain[i]
+            batch_indices = random.sample(range(0, data_count - 1), batch_size)
+            for index in batch_indices:
+                itemx = xtrain[index]
+                itemy = ytrain[index]
                 if self.weight is None:
                     self.weight = np.zeros(len(itemx) + 1)
                 prediction = self.predict(itemx)
