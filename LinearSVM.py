@@ -14,7 +14,8 @@ class LinearSVM:
         """
         
     def __init__(self, lr=0.3, C=0.1, loss="hinge", 
-                 max_iters=100, batch_size=20, tol=0.99):
+                 max_iters=100, batch_size=20, tol=0.99,
+                 show_plot=True):
         self.lr = lr
         self.C = C
         self.weights = []
@@ -24,6 +25,7 @@ class LinearSVM:
         self.losses = []
         self.accuracies = []
         self.tol = tol
+        self.show_plot = show_plot
 
     def train(self, xtrain, ytrain):
         
@@ -74,7 +76,8 @@ class LinearSVM:
             self.losses.append(self.hinge_loss(xtrain, ytrain, self.weights))            
             self.accuracies.append(self.accuracy(xtrain, ytrain))
     
-        self.plot_margin(xtrain, ytrain)
+        if show_plot:
+            self.plot_margin(xtrain, ytrain)
         
     def predict(self, sample, label):
         return label * np.dot(self.weights, sample)
