@@ -117,18 +117,3 @@ class LinearSVM:
         plt.show()
 
 # %%
-
-dataloader = DataLoader()
-xtrain, xtest, ytrain, ytest = dataloader.get_toydata_tiny()
-
-svm = LinearSVM(lr=0.1, C=0.1, max_iters=20)
-svm.train(xtrain, ytrain)
-plt.subplot(1,2,1)
-plt.title("Hinge Loss")
-plt.plot(svm.losses)
-plt.subplot(1,2,2)
-plt.title("Classification Accuracy")
-plt.plot(svm.accuracies)
-plt.ylim(min(svm.accuracies),1)
-
-# %%
