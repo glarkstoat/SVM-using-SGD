@@ -1,6 +1,7 @@
 #%%
 from DataLoader import *
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 class LinearSVM:
     """        
@@ -43,7 +44,7 @@ class LinearSVM:
         if n_batches < 1:
             raise Exception("Batch size is greater than number of samples!")
         
-        for epoch in range(self.max_iters): # epochs
+        for epoch in tqdm(range(self.max_iters)): # epochs
 
             #self.lr /= np.sqrt(t+1) # adaptive learning rate
             
@@ -76,7 +77,7 @@ class LinearSVM:
             self.losses.append(self.hinge_loss(xtrain, ytrain, self.weights))            
             self.accuracies.append(self.accuracy(xtrain, ytrain))
     
-        if show_plot:
+        if self.show_plot:
             self.plot_margin(xtrain, ytrain)
         
     def predict(self, sample, label):
