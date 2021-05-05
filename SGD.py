@@ -34,5 +34,5 @@ class SGD:
                 error += current_error ** 2
                 # optimize weights
                 self.weight[0] -= self.learning_rate * current_error
-                self.weight[1:] -= self.learning_rate * current_error * itemx[1:]
+                self.weight[1:] -= self.learning_rate * current_error * itemx[0:]
             print(f"Epoch: {epoch}. Total error: {error}")
