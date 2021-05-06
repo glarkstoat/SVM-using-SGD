@@ -31,16 +31,14 @@ class LinearSVM:
         self.runtime = None
 
     def train(self, xtrain, ytrain, optimizer="minibatchGD"):
+        
+        n_samples = len(ytrain)
                 
         # add extra column of 1s to xtrain and weights to account for bias term b
         xtrain = np.c_[xtrain, np.ones(xtrain.shape[0])]
         self.weights = np.ones(xtrain.shape[1])
-
-        n_samples = len(ytrain)
-        # reset number of iterations if dataset has low number of samples
-        if self.max_iters > n_samples:
-            self.max_iters = n_samples
-        
+        #self.weights = np.random.normal(size=xtrain.shape[1])
+                
         n_batches = int(len(ytrain) / self.batch_size)
         if n_batches < 1:
             raise Exception("Batch size is greater than number of samples!")
@@ -65,7 +63,7 @@ class LinearSVM:
         losses, accuracies = [], []
         for epoch in tqdm(range(self.max_iters)):
 
-            #self.lr /= np.sqrt(t+1) # adaptive learning rate
+            #self.lr /= np.sqrt(epoch+1) # adaptive learning rate
             xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
             # Loops through the batches
