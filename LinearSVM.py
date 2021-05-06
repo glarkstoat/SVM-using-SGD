@@ -13,6 +13,16 @@ class LinearSVM:
         
         C : float
             Regularization parameter.
+            
+        loss : str
+            Loss used by optimization. Currently implemented : "hinge"
+            
+        max_iters : int
+            Number of iterations i.e. epochs during optimization.
+            
+        batch_size : int
+            Number of samples per batch when using minibatch GD.
+            
         """
         
     def __init__(self, lr=0.3, C=0.1, loss="hinge", 
@@ -36,7 +46,7 @@ class LinearSVM:
                 
         # add extra column of 1s to xtrain and weights to account for bias term b
         xtrain = np.c_[xtrain, np.ones(xtrain.shape[0])]
-        self.weights = np.ones(xtrain.shape[1])
+        self.weights = np.zeros(xtrain.shape[1])
         #self.weights = np.random.normal(size=xtrain.shape[1])
                 
         n_batches = int(len(ytrain) / self.batch_size)
@@ -63,7 +73,7 @@ class LinearSVM:
         losses, accuracies = [], []
         for epoch in tqdm(range(self.max_iters)):
 
-            #self.lr /= np.sqrt(epoch+1) # adaptive learning rate
+            self.lr /= np.sqrt(epoch+1) # adaptive learning rate
             xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
             # Loops through the batches
@@ -84,7 +94,7 @@ class LinearSVM:
                         grad += 2 * self.C * self.weights"""
                 
                 # Weights are updated after batch is completed
-                self.weights -= self.lr * grad / self.batch_size   
+                self.weights -= self.lr * grad / self.batch_size 
             
             # Losses & accuracies after one epoch    
             losses.append(self.hinge_loss(xtrain, ytrain, self.weights))            
