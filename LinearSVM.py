@@ -2,6 +2,7 @@
 from DataLoader import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import datetime
 
 class LinearSVM:
     """        
@@ -27,31 +28,45 @@ class LinearSVM:
         self.accuracies = []
         self.tol = tol
         self.show_plot = show_plot
+        self.runtime = None
 
-    def train(self, xtrain, ytrain):
-        
-        n_samples = len(ytrain)
-        
-        # add extra column of 1s to xtrain and weights
+    def train(self, xtrain, ytrain, optimizer="minibatchGD"):
+                
+        # add extra column of 1s to xtrain and weights to account for bias term b
         xtrain = np.c_[xtrain, np.ones(xtrain.shape[0])]
         self.weights = np.ones(xtrain.shape[1])
-        
+
+        n_samples = len(ytrain)
         # reset number of iterations if dataset has low number of samples
         if self.max_iters > n_samples:
             self.max_iters = n_samples
         
-        n_batches = int(n_samples / self.batch_size)
+        n_batches = int(len(ytrain) / self.batch_size)
         if n_batches < 1:
             raise Exception("Batch size is greater than number of samples!")
         
-        for epoch in tqdm(range(self.max_iters)): # epochs
+        # Perform optimization
+        if optimizer == "minibatchGD":
+            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches)
+        else:
+            raise Exception("Invalid optimizer!")
+            
+        if self.show_plot:
+            self.plot_margin(xtrain, ytrain)
+        
+    def minibatchGD(self, xtrain, ytrain, n_batches):
+        """ Calculates the average gradient for a given batch
+            and updates the weights with these averages after the
+            batch has been processed. """
+        
+        # Used to calculate runtime
+        start = datetime.datetime.now()
+        
+        losses, accuracies = [], []
+        for epoch in tqdm(range(self.max_iters)):
 
             #self.lr /= np.sqrt(t+1) # adaptive learning rate
-            
-            # Shuffles the training data
-            indices = np.random.permutation(n_samples)
-            xtrain = xtrain[indices]
-            ytrain = ytrain[indices]
+            xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
             # Loops through the batches
             for i in range(n_batches):
@@ -67,24 +82,22 @@ class LinearSVM:
                     prediction = self.predict(x,y)
                     if prediction < 1: # either within margin or incorrectly classified
                         grad += self.gradient(x, y)
-                    """else:
+                    """else: ## Technically required but makes results worse
                         grad += 2 * self.C * self.weights"""
                 
                 # Weights are updated after batch is completed
                 self.weights -= self.lr * grad / self.batch_size   
             
             # Losses & accuracies after one epoch    
-            self.losses.append(self.hinge_loss(xtrain, ytrain, self.weights))            
-            self.accuracies.append(self.accuracy(xtrain, ytrain))
-    
-        if self.show_plot:
-            self.plot_margin(xtrain, ytrain)
+            losses.append(self.hinge_loss(xtrain, ytrain, self.weights))            
+            accuracies.append(self.accuracy(xtrain, ytrain))
+
+        self.runtime = (datetime.datetime.now() - start).total_seconds() 
         
+        return losses, accuracies
+    
     def predict(self, sample, label):
         return label * np.dot(self.weights, sample)
-    
-    def update_weights(self, sample, label):
-        self.weights -= self.lr * self.gradient(sample, label)
 
     def gradient(self, sample, label, loss="hinge"):
         if loss == "hinge":
@@ -119,5 +132,12 @@ class LinearSVM:
         Z = Z.reshape(X.shape)
         plt.contour(X, Y, Z, levels=[-1,0,1], colors=['green', 'blue', 'red'])
         plt.show()
+        
+    def shuffle_data(self, xtrain, ytrain):
+        indices = np.random.permutation(len(ytrain))
+        xtrain = xtrain[indices]
+        ytrain = ytrain[indices]
+        
+        return xtrain, ytrain
 
 # %%
