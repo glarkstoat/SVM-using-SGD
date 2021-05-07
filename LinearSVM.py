@@ -25,9 +25,9 @@ class LinearSVM:
             
         """
         
-    def __init__(self, lr=0.3, C=0.1, loss="hinge", 
+    def __init__(self, lr=5, C=0.1, loss="hinge", 
                  max_iters=100, batch_size=20, tol=0.99,
-                 show_plot=True):
+                 show_plot=False):
         self.lr = lr
         self.C = C
         self.weights = []
@@ -49,7 +49,7 @@ class LinearSVM:
         self.weights = np.zeros(xtrain.shape[1])
         #self.weights = np.random.normal(size=xtrain.shape[1])
                 
-        n_batches = int(len(ytrain) / self.batch_size)
+        n_batches = int(n_samples / self.batch_size)
         if n_batches < 1:
             raise Exception("Batch size is greater than number of samples!")
         
