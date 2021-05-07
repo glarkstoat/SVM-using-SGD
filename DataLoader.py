@@ -54,7 +54,7 @@ class DataLoader:
         if normalize:
             xtrain, xtest = self.normalization(xtrain, xtest)
 
-        return xtrain, xtest, mnist['train_labels'], mnist['test_labels']
+        return xtrain, xtest, mnist['train_labels'][0], mnist['test_labels'][0]
 
     @staticmethod
     def normalization(train, test):
