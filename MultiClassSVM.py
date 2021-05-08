@@ -5,6 +5,8 @@ from tqdm import tqdm
 import datetime
 
 class MultiClassSVM:
+    """ SVM that can handle multiple classes by using the multiclass hinge loss. 
+        Returns the average accuracies and losses over all classes. """
     
     def __init__(self, lr=5, C=0.1, loss="hinge", 
                     max_iters=100, batch_size=20, tol=0.99,
@@ -21,7 +23,7 @@ class MultiClassSVM:
         self.show_plot = show_plot
         self.runtime = None
         
-    def train(self, xtrain, ytrain, optimizer="minibatchGD"):
+    def fit(self, xtrain, ytrain, optimizer="minibatchGD"):
             
         n_samples = len(ytrain)
         classes = np.unique(ytrain).astype(int)
