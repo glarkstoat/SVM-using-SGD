@@ -25,7 +25,7 @@ class LinearSVM:
             
         """
         
-    def __init__(self, lr=5, C=0.1, loss="hinge", 
+    def __init__(self, lr=0.5, C=0.01, loss="hinge", 
                  max_iters=100, batch_size=20, tol=0.99,
                  show_plot=False):
         self.lr = lr
@@ -40,7 +40,7 @@ class LinearSVM:
         self.show_plot = show_plot
         self.runtime = None
 
-    def train(self, xtrain, ytrain, optimizer="minibatchGD"):
+    def fit(self, xtrain, ytrain, optimizer="minibatchGD", tqdm_toggle=True):
         
         n_samples = len(ytrain)
                 
@@ -55,14 +55,16 @@ class LinearSVM:
         
         # Perform optimization
         if optimizer == "minibatchGD":
-            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches)
+            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr, tqdm_toggle)
         else:
             raise Exception("Invalid optimizer!")
             
         if self.show_plot:
             self.plot_margin(xtrain, ytrain)
         
-    def minibatchGD(self, xtrain, ytrain, n_batches):
+        return self
+        
+    def minibatchGD(self, xtrain, ytrain, n_batches, lr, tqdm_toggle):
         """ Calculates the average gradient for a given batch
             and updates the weights with these averages after the
             batch has been processed. """
@@ -71,9 +73,15 @@ class LinearSVM:
         start = datetime.datetime.now()
         
         losses, accuracies = [], []
-        for epoch in tqdm(range(self.max_iters)):
+        
+        if tqdm_toggle:
+            iterations = tqdm(range(self.max_iters))
+        else:
+            iterations = range(self.max_iters)
+            
+        for epoch in iterations:
 
-            self.lr /= np.sqrt(epoch+1) # adaptive learning rate
+            lr /= np.sqrt(epoch+1) # adaptive learning rate
             xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
             # Loops through the batches
@@ -94,7 +102,7 @@ class LinearSVM:
                         grad += 2 * self.C * self.weights"""
                 
                 # Weights are updated after batch is completed
-                self.weights -= self.lr * grad / self.batch_size 
+                self.weights -= lr * grad / self.batch_size 
             
             # Losses & accuracies after one epoch    
             losses.append(self.hinge_loss(xtrain, ytrain, self.weights))            

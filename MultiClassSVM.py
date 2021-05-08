@@ -39,14 +39,14 @@ class MultiClassSVM:
         
         # Perform optimization
         if optimizer == "minibatchGD":
-            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches)
+            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr)
         else:
             raise Exception("Invalid optimizer!")
             
         if self.show_plot:
             self.plot_margin(xtrain, ytrain)
 
-    def minibatchGD(self, xtrain, ytrain, n_batches):
+    def minibatchGD(self, xtrain, ytrain, n_batches, lr):
         """ Calculates the average gradient for a given batch
             and updates the weights with these averages after the
             batch has been processed. """
@@ -59,7 +59,7 @@ class MultiClassSVM:
             
             print(f"\nEpoch: {epoch} / {self.max_iters} ... ")
 
-            self.lr /= np.sqrt(epoch) # adaptive learning rate
+            lr /= np.sqrt(epoch) # adaptive learning rate
             xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
             # Loops through the batches
@@ -94,7 +94,7 @@ class MultiClassSVM:
 
                 # Weights are updated after batch is completed
                 for i in self.weights.keys():
-                    self.weights[i] -= self.lr * gradients[i] / self.batch_size
+                    self.weights[i] -= lr * gradients[i] / self.batch_size
             
             # Losses & accuracies after one epoch    
             losses.append(self.mc_hinge_loss(xtrain, ytrain))            
