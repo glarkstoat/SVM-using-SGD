@@ -142,13 +142,14 @@ class LinearSVM:
                        for feature, label in zip(features, labels)]) / len(labels)
 
     def plot_margin(self, xtrain, ytrain):
+        """ Adapted from IML's svm.ipynb. Credit to Prof. Tschiatschek """
         
         plt.plot(xtrain[ytrain==-1,0], xtrain[ytrain==-1,1], '*', c='g', label='Class 1')
         plt.plot(xtrain[ytrain==1,0], xtrain[ytrain==1,1], '+', c='r', label='Class 2')
                 
         # decision boundary
         X, Y = np.meshgrid(np.linspace(-6,6,10), np.linspace(-6,6,10))
-        Z = np.c_[X.ravel(), Y.ravel()].dot(self.weights[:-1])
+        Z = np.c_[X.ravel(), Y.ravel(), np.ones(100)].dot(self.weights)
         Z = Z.reshape(X.shape)
         plt.contour(X, Y, Z, levels=[-1,0,1], colors=['green', 'blue', 'red'])
         plt.show()
