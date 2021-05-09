@@ -47,6 +47,8 @@ class MultiClassSVM:
             
         if self.show_plot:
             self.plot_margin(xtrain, ytrain)
+        
+        return self
 
     def minibatchGD(self, xtrain, ytrain, n_batches, lr):
         """ Calculates the average gradient for a given batch
@@ -104,7 +106,7 @@ class MultiClassSVM:
 
         self.runtime = (datetime.datetime.now() - start).total_seconds() 
         
-        return losses, accuracies
+        return np.array(losses), np.array(accuracies)
     
     def predict_class(self, sample):
         """ Returs class with highest confidence """

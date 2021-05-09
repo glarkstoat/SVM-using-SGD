@@ -3,6 +3,10 @@ from DataLoader import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import datetime
+import seaborn as sns
+sns.set_style('darkgrid')
+sns.set(color_codes=True)
+sns.set_context('paper')
 
 class LinearSVM:
     """        
@@ -110,7 +114,7 @@ class LinearSVM:
 
         self.runtime = (datetime.datetime.now() - start).total_seconds() 
         
-        return losses, accuracies
+        return np.array(losses), np.array(accuracies)
     
     def predict(self, sample, label):
         return label * np.dot(self.weights, sample)
