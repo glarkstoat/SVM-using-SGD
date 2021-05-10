@@ -31,7 +31,7 @@ class LinearSVM:
         
     def __init__(self, lr=0.5, C=0.01, loss="hinge", 
                  max_iters=100, batch_size=20, tol=0.99,
-                 show_plot=False):
+                 show_plot=False, tqdm_toggle=False):
         self.lr = lr
         self.C = C
         self.weights = []
@@ -43,8 +43,9 @@ class LinearSVM:
         self.tol = tol
         self.show_plot = show_plot
         self.runtime = None
+        self.tqdm_toggle = tqdm_toggle
 
-    def fit(self, xtrain, ytrain, optimizer="minibatchGD", tqdm_toggle=True):
+    def fit(self, xtrain, ytrain, optimizer="minibatchGD"):
         
         n_samples = len(ytrain)
                 
@@ -59,7 +60,7 @@ class LinearSVM:
         
         # Perform optimization
         if optimizer == "minibatchGD":
-            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr, tqdm_toggle)
+            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr)
         else:
             raise Exception("Invalid optimizer!")
             
@@ -68,7 +69,7 @@ class LinearSVM:
         
         return self
         
-    def minibatchGD(self, xtrain, ytrain, n_batches, lr, tqdm_toggle):
+    def minibatchGD(self, xtrain, ytrain, n_batches, lr):
         """ Calculates the average gradient for a given batch
             and updates the weights with these averages after the
             batch has been processed. """
@@ -77,8 +78,7 @@ class LinearSVM:
         start = datetime.datetime.now()
         
         losses, accuracies = [], []
-        
-        if tqdm_toggle:
+        if self.tqdm_toggle:
             iterations = tqdm(range(self.max_iters))
         else:
             iterations = range(self.max_iters)
@@ -93,19 +93,19 @@ class LinearSVM:
                 batch_start = i*self.batch_size
                 batch_end = (i+1)*self.batch_size
                 
-                grad = 0
                 # Sums up the gradients of the incorrectly classified samples
                 # or the samples that lie within the margin
+                grad = 0
                 for x,y in zip(xtrain[batch_start:batch_end], 
                                ytrain[batch_start:batch_end]):
                     
                     prediction = self.predict(x,y)
                     if prediction < 1: # either within margin or incorrectly classified
-                        grad += self.gradient(x, y)
+                        grad += self.hinge_gradient(x, y)
                     """else: ## Technically required but makes results worse
                         grad += 2 * self.C * self.weights"""
                 
-                # Weights are updated after batch is completed
+                # Weights are updated with average gradients after batch is completed
                 self.weights -= lr * grad / self.batch_size 
             
             # Losses & accuracies after one epoch    
@@ -119,39 +119,37 @@ class LinearSVM:
     def predict(self, sample, label):
         return label * np.dot(self.weights, sample)
 
-    def gradient(self, sample, label, loss="hinge"):
+    def hinge_gradient(self, sample, label, loss="hinge"):
         if loss == "hinge":
             return 2 * self.C * self.weights - label * sample
         else:
             raise Exception("Gradient loss not defined.")
         
     def accuracy(self, features, labels):
-        """ compute classification error """
+        """ compute classification error rate """
         
-        n_correct = 0
-        for (x, y) in zip(features, labels):
-            pred = self.predict(x,y)
-            if pred > 0:
-                n_correct += 1
-                
+        predictions = labels * np.dot(self.weights, features.T)
+        n_correct = np.sum(predictions > 0)
+
         return n_correct / len(labels)
         
     @staticmethod
     def hinge_loss(features, labels, weights):
-        return np.sum([max(0, 1 - label * np.dot(weights, feature))
-                       for feature, label in zip(features, labels)]) / len(labels)
-
+        
+        predictions = labels * np.dot(weights, features.T)
+        return sum(filter(lambda x: x>0, 1 - predictions)) / len(labels) # equivalent to hingle loss
+               
     def plot_margin(self, xtrain, ytrain):
         """ Adapted from IML's svm.ipynb. Credit to Prof. Tschiatschek """
         
-        plt.plot(xtrain[ytrain==-1,0], xtrain[ytrain==-1,1], '*', c='g', label='Class 1')
-        plt.plot(xtrain[ytrain==1,0], xtrain[ytrain==1,1], '+', c='r', label='Class 2')
+        plt.scatter(xtrain[ytrain==-1,0], xtrain[ytrain==-1,1], label='Class -1', s=20, alpha=0.5, marker="x", c="b")
+        plt.scatter(xtrain[ytrain==1,0], xtrain[ytrain==1,1], label='Class 1',s=30, alpha=0.5, marker="x", c="red")
                 
         # decision boundary
-        X, Y = np.meshgrid(np.linspace(-6,6,10), np.linspace(-6,6,10))
+        X, Y = np.meshgrid(np.linspace(-3,3,10), np.linspace(-4,4,10))
         Z = np.c_[X.ravel(), Y.ravel(), np.ones(100)].dot(self.weights)
         Z = Z.reshape(X.shape)
-        plt.contour(X, Y, Z, levels=[-1,0,1], colors=['green', 'blue', 'red'])
+        plt.contour(X, Y, Z, levels=[-1,0,1], colors=["blue", "gray", "red"])
         plt.show()
         
     def shuffle_data(self, xtrain, ytrain):

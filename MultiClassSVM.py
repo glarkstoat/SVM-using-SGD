@@ -9,8 +9,8 @@ class MultiClassSVM:
         Returns the average accuracies and losses over all classes. """
     
     def __init__(self, lr=5, C=0.1, loss="hinge", 
-                    max_iters=100, batch_size=20, tol=0.99,
-                    show_plot=False):
+                    max_iters=100, batch_size=20, 
+                    tol=0.99, tqdm_toggle=False):
         self.lr = lr
         self.C = C
         self.weights = []
@@ -20,8 +20,8 @@ class MultiClassSVM:
         self.losses = []
         self.accuracies = []
         self.tol = tol
-        self.show_plot = show_plot
         self.runtime = None
+        self.tqdm_toggle = tqdm_toggle
         
     def fit(self, xtrain, ytrain, optimizer="minibatchGD"):
             
@@ -44,9 +44,6 @@ class MultiClassSVM:
             self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr)
         else:
             raise Exception("Invalid optimizer!")
-            
-        if self.show_plot:
-            self.plot_margin(xtrain, ytrain)
         
         return self
 
@@ -57,17 +54,22 @@ class MultiClassSVM:
         
         # Used to calculate runtime
         start = datetime.datetime.now()
-        
-        losses, accuracies = [], []
-        for epoch in tqdm(range(1, self.max_iters+1)):
+
+        if self.tqdm_toggle:
+            iterations = tqdm(range(1, self.max_iters+1))
+        else:
+            iterations = range(1, self.max_iters+1)
             
-            print(f"\nEpoch: {epoch} / {self.max_iters} ... ")
+        losses, accuracies = [], []
+        for epoch in iterations:
+            
+            #print(f"\nEpoch: {epoch} / {self.max_iters} ... ")
 
             lr /= np.sqrt(epoch) # adaptive learning rate
             xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
             # Loops through the batches
-            for count in tqdm(range(n_batches), position=0, leave=True):
+            for count in range(n_batches):
                 batch_start = count*self.batch_size
                 batch_end = (count+1)*self.batch_size
                 
