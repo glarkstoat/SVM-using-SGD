@@ -8,20 +8,17 @@ class MultiClassSVM:
     """ SVM that can handle multiple classes by using the multiclass hinge loss. 
         Returns the average accuracies and losses over all classes. """
     
-    def __init__(self, lr=5, C=0.1, loss="hinge", 
-                    max_iters=100, batch_size=20, 
-                    tol=0.99, tqdm_toggle=False):
+    def __init__(self, lr=0.1, C=0.001, loss="hinge", 
+                    max_iters=5, batch_size=200, tqdm_toggle=False):
         self.lr = lr
         self.C = C
-        self.weights = []
         self.loss = loss
         self.max_iters = max_iters
         self.batch_size = batch_size
+        self.tqdm_toggle = tqdm_toggle
         self.losses = []
         self.accuracies = []
-        self.tol = tol
-        self.runtime = None
-        self.tqdm_toggle = tqdm_toggle
+        self.runtime = None # in seconds
         
     def fit(self, xtrain, ytrain, optimizer="minibatchGD"):
             
@@ -50,7 +47,7 @@ class MultiClassSVM:
     def minibatchGD(self, xtrain, ytrain, n_batches, lr):
         """ Calculates the average gradient for a given batch
             and updates the weights with these averages after the
-            batch has been processed. """
+            batch has been completed. """
         
         # Used to calculate runtime
         start = datetime.datetime.now()
@@ -63,8 +60,6 @@ class MultiClassSVM:
         losses, accuracies = [], []
         for epoch in iterations:
             
-            #print(f"\nEpoch: {epoch} / {self.max_iters} ... ")
-
             lr /= np.sqrt(epoch) # adaptive learning rate
             xtrain, ytrain = self.shuffle_data(xtrain, ytrain)
             
@@ -85,7 +80,8 @@ class MultiClassSVM:
                         
                         inner_max = [[j, self.confidence(self.weights[j], x) - self.confidence(self.weights[y], x)]
                                                     for j, weight in self.weights.items() if j != y]
-                        # sorts the list by descending confidence score and returns the j that has the highest cs
+                        
+                        # sorts the list by descending confidence score and returns the j that has the highest confidence
                         inner_max = sorted(inner_max, key=lambda row:row[1], reverse=True)
                         j = inner_max[0][0] # class with maximum confidence
                         
