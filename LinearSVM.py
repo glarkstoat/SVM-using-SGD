@@ -96,13 +96,13 @@ class LinearSVM:
                 # Sums up the gradients of the incorrectly classified samples
                 # or the samples that lie within the margin
                 grad = 0
-                for x,y in zip(xtrain[batch_start:batch_end], 
-                               ytrain[batch_start:batch_end]):
+                for sample, label in zip(xtrain[batch_start:batch_end], 
+                                         ytrain[batch_start:batch_end]):
                     
-                    prediction = self.predict(x,y)
-                    if prediction < 1: # either within margin or incorrectly classified
-                        grad += self.hinge_gradient(x, y)
-                    """else: ## Technically required but makes results worse
+                    prediction = self.predict(sample)
+                    if label * prediction < 1: # either within margin or incorrectly classified
+                        grad += self.hinge_gradient(sample, label)
+                    """else: ## Technically required but makes results worse and computation longer
                         grad += 2 * self.C * self.weights"""
                 
                 # Weights are updated with average gradients after batch is completed
@@ -116,8 +116,14 @@ class LinearSVM:
         
         return np.array(losses), np.array(accuracies)
     
-    def predict(self, sample, label):
-        return label * np.dot(self.weights, sample)
+    def predict(self, sample):
+        """ Calculates the confidence value for a given sample. """
+        
+        # If function is called externally the 1 for the offset term is manually added
+        if sample.shape != self.weights.shape:
+            sample = np.append(sample, 1)
+            
+        return np.dot(self.weights, sample)
 
     def hinge_gradient(self, sample, label, loss="hinge"):
         if loss == "hinge":
@@ -126,7 +132,12 @@ class LinearSVM:
             raise Exception("Gradient loss not defined.")
         
     def accuracy(self, features, labels):
-        """ compute classification error rate """
+        """ Computes the classification score for given feature vectors and their 
+            respective labels. Requires a previously trained SVM. """
+        
+        # If function is called externally the 1s for the offset terms are manually added
+        if features.shape[1] != self.weights.shape[0]:
+            features = np.c_[features, np.ones(features.shape[0])]
         
         predictions = labels * np.dot(self.weights, features.T)
         n_correct = np.sum(predictions > 0)
@@ -136,11 +147,16 @@ class LinearSVM:
     @staticmethod
     def hinge_loss(features, labels, weights):
         
+        # If function is called externally the 1s for the offset terms are manually added
+        if features.shape[1] != weights.shape[0]:
+            features = np.c_[features, np.ones(features.shape[0])]        
+        
         predictions = labels * np.dot(weights, features.T)
         return sum(filter(lambda x: x>0, 1 - predictions)) / len(labels) # equivalent to hingle loss
                
     def plot_margin(self, xtrain, ytrain):
-        """ Adapted from IML's svm.ipynb. Credit to Prof. Tschiatschek """
+        """ Adapted from IML's svm.ipynb. Credit to Prof. Tschiatschek.
+            Only works with 2-dimensional features and two classes. """
         
         plt.scatter(xtrain[ytrain==-1,0], xtrain[ytrain==-1,1], label='Class -1', s=20, alpha=0.5, marker="x", c="b")
         plt.scatter(xtrain[ytrain==1,0], xtrain[ytrain==1,1], label='Class 1',s=30, alpha=0.5, marker="x", c="red")
