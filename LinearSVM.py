@@ -27,10 +27,18 @@ class LinearSVM:
         batch_size : int
             Number of samples per batch when using minibatch GD.
             
+        show_plot : bool
+            If set to True the function plot_margin is called at the end of 
+            training. This works for 2-dimensional features only. 
+        
+        tqdm_toggle : bool
+            If set to True the training progress will be displayed via tqdm prints. 
+            Not recommended when carrying out hyperparameter search.
+        
         """
         
     def __init__(self, lr=0.5, C=0.01, loss="hinge", 
-                 max_iters=100, batch_size=20, tol=0.99,
+                 max_iters=30, batch_size=20,
                  show_plot=False, tqdm_toggle=False):
         self.lr = lr
         self.C = C
@@ -40,7 +48,6 @@ class LinearSVM:
         self.batch_size = batch_size
         self.losses = []
         self.accuracies = []
-        self.tol = tol
         self.show_plot = show_plot
         self.runtime = None
         self.tqdm_toggle = tqdm_toggle
