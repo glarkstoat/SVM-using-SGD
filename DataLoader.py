@@ -1,8 +1,9 @@
 # %%
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+
+from DataUtils import *
+
 
 class DataLoader:
     def __init__(self, path='datasets/'):
@@ -20,7 +21,7 @@ class DataLoader:
                                                         train_size=train_split_size,
                                                         random_state=42)  # to keep results consistent
         if normalize:
-            xtrain, xtest = self.normalization(xtrain, xtest)
+            xtrain, xtest = DataUtils.normalization(xtrain, xtest)
 
         return xtrain, xtest, ytrain, ytest
 
@@ -36,7 +37,7 @@ class DataLoader:
                                                         train_size=train_split_size,
                                                         random_state=42)
         if normalize:
-            xtrain, xtest = self.normalization(xtrain, xtest)
+            xtrain, xtest = DataUtils.normalization(xtrain, xtest)
 
         return xtrain, xtest, ytrain, ytest
 
@@ -52,18 +53,7 @@ class DataLoader:
         xtest = mnist['test'].T
 
         if normalize:
-            xtrain, xtest = self.normalization(xtrain, xtest)
+            xtrain, xtest = DataUtils.normalization(xtrain, xtest)
 
         return xtrain, xtest, mnist['train_labels'][0], mnist['test_labels'][0]
-
-    @staticmethod
-    def normalization(train, test):
-        """ Fits a normalization model with xtrain and 
-            applies transformation to both sets. """
-
-        scaler = StandardScaler().fit(train)
-        train = scaler.transform(train)
-        test = scaler.transform(test)
-
-        return train, test
 # %%
