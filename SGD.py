@@ -1,3 +1,4 @@
+import datetime
 from typing import Tuple
 
 import numpy as np
@@ -18,6 +19,7 @@ class SGD:
         return result
 
     def train(self, xtrain, ytrain, batch_size, epoch_count):
+        start = datetime.datetime.now()
         if len(xtrain) != len(ytrain):
             print("Check your training data dimensions.")
         data_count = len(xtrain)
@@ -38,3 +40,4 @@ class SGD:
                 self.weight[0] -= self.learning_rate * current_error
                 self.weight[1:] -= self.learning_rate * current_error * itemx[0:]
             print(f"Epoch: {epoch}. Total error: {error}")
+        print(f"Finished in {datetime.datetime.now() - start}")

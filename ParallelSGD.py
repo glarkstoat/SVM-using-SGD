@@ -1,5 +1,10 @@
+import math
+from datetime import time, datetime
+
 import numpy as np
 import threading
+
+from tqdm import tqdm
 
 from DataUtils import DataUtils
 
@@ -17,12 +22,13 @@ class ParallelSGD:
         if self.weights[thread_number] is None:
             print("You need to train first!")
             return None
-        weight = self.weights[thread_number]
-        return np.dot(weight, features)
+        return np.dot(self.weights[thread_number], features)
 
     def train(self, xtrain, ytrain):
-        self.examples_per_thread = xtrain.shape[1] / self.thread_count
+        self.examples_per_thread = math.floor(xtrain.shape[0] / self.thread_count)
+        print(f"Examples per thread: {self.examples_per_thread}")
         self.weights = {}
+        start = datetime.now()
         for i in range(self.thread_count):
             self.weights[i] = np.zeros(xtrain.shape[1])
             thread = threading.Thread(target=self.train_threaded, args=(i, xtrain, ytrain))
@@ -32,18 +38,28 @@ class ParallelSGD:
         for thread in self.threads:
             thread.join()
 
+        print(f"Finished in {datetime.now() - start}")
+
     @staticmethod
     def hinge_gradient(weight, sample, label, regularization):
         return 2 * regularization * weight - label * sample
 
     def train_threaded(self, thread_number, xtrain, ytrain):
-        xtrain_shuffled, ytrain_shuffled = DataUtils.shuffle_data(xtrain, ytrain)
-        for i in range(self.examples_per_thread):
-            itemx, itemy = xtrain_shuffled[i], ytrain_shuffled[i]
+        try:
+            print(f"Thread {thread_number} spawned")
+            xtrain_shuffled, ytrain_shuffled = DataUtils.shuffle_data(xtrain, ytrain)
             weight = self.weights[thread_number]
-            prediction = self.predict_for_thread(itemx, thread_number)
-            if itemy * prediction < 1:  # either within margin or incorrectly classified
-                weight -= self.learning_rate * self.hinge_gradient(weight, itemx, itemy, self.regularization)
+            for i in range(self.examples_per_thread):
+                itemx, itemy = xtrain_shuffled[i], ytrain_shuffled[i]
+                prediction = self.predict_for_thread(itemx, thread_number)
+                # if itemy * prediction < 1:  # either within margin or incorrectly classified
+                #     weight -= self.learning_rate * self.hinge_gradient(weight, itemx, itemy, self.regularization)
+                if prediction != itemy:
+                    weight -= self.learning_rate * self.hinge_gradient(weight, itemx, itemy, self.regularization)
+            self.weights[thread_number] = weight
+            print(f"Thread {thread_number} finished")
+        except Exception as e:
+            print(e)
 
     def total_weight(self):
         return np.mean(self.weights.values())
