@@ -61,7 +61,7 @@ class ParallelSGD:
                 prediction = self.predict_for_thread(itemx, thread_number)
                 # if itemy * prediction < 1:  # either within margin or incorrectly classified
                 #     weight -= self.learning_rate * self.hinge_gradient(weight, itemx, itemy, self.regularization)
-                if prediction != itemy:
+                if itemy * prediction < 1:
                     weight -= self.learning_rate * self.hinge_gradient(weight, itemx, itemy, self.regularization)
                 self.losses[thread_number].append(self.loss_function(xtrain, ytrain, weight))
                 self.accuracies[thread_number].append(self.accuracy_function(xtrain, ytrain, weight))
@@ -71,4 +71,4 @@ class ParallelSGD:
             print(e)
 
     def total_weight(self):
-        return np.mean(self.weights.values())
+        return np.mean([np.array(item) for item in self.weights.values()], axis=0)
