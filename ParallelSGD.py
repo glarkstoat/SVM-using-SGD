@@ -1,16 +1,14 @@
 import math
-from datetime import time, datetime
+from datetime import datetime
 
 import numpy as np
 import threading
-
-from tqdm import tqdm
 
 from DataUtils import DataUtils
 
 
 class ParallelSGD:
-    def __init__(self, learning_rate, thread_count, regularization, loss_function, accuracy_function):
+    def __init__(self, learning_rate, thread_count, regularization, loss_function, accuracy_function, collect_data=False):
         self.learning_rate = learning_rate
         self.thread_count = thread_count
         self.weights = None  # map (thread_number, weights)
@@ -21,6 +19,8 @@ class ParallelSGD:
         self.accuracies = {}
         self.loss_function = loss_function
         self.accuracy_function = accuracy_function
+        self.collect_data = collect_data
+        self.runtime = None
 
     @staticmethod
     def predict(features, weight):
@@ -44,7 +44,8 @@ class ParallelSGD:
         for thread in self.threads:
             thread.join()
 
-        print(f"Finished in {datetime.now() - start}")
+        self.runtime = datetime.now() - start
+        print(f"Finished in {self.runtime}")
         return self.losses, self.accuracies
 
     @staticmethod
@@ -53,7 +54,6 @@ class ParallelSGD:
 
     def train_threaded(self, thread_number, xtrain, ytrain):
         try:
-            print(f"Thread {thread_number} spawned")
             xtrain_shuffled, ytrain_shuffled = DataUtils.shuffle_data(xtrain, ytrain)
             weight = self.weights[thread_number]
             loss = []
@@ -67,16 +67,20 @@ class ParallelSGD:
                 if itemy * prediction < 1:
                     weight -= learning_rate * self.hinge_gradient(weight, itemx, itemy, self.regularization)
 
-                current_percentage = (thread_number * self.examples_per_thread + i) / (xtrain_shuffled.shape[0] / 100)
-                if current_percentage != last_checkpoint and current_percentage % 5 == 0:
-                    last_checkpoint = current_percentage
-                    loss.append(self.loss_function(xtrain, ytrain, weight))
-                    accuracy.append(self.accuracy_function(xtrain, ytrain, weight))
+                if self.collect_data:
+                    current_percentage = (thread_number * self.examples_per_thread + i) / (xtrain_shuffled.shape[0] / 100)
+                    if current_percentage != last_checkpoint and current_percentage % 5 == 0:
+                        last_checkpoint = current_percentage
+                        loss.append(self.loss_function(xtrain, ytrain, weight))
+                        accuracy.append(self.accuracy_function(xtrain, ytrain, weight))
+                else:
+                    if i == self.examples_per_thread - 1:
+                        loss.append(self.loss_function(xtrain, ytrain, weight))
+                        accuracy.append(self.accuracy_function(xtrain, ytrain, weight))
 
             self.weights[thread_number] = weight
             self.losses[thread_number] = loss
             self.accuracies[thread_number] = accuracy
-            print(f"Thread {thread_number} finished")
         except Exception as e:
             print(e)
 

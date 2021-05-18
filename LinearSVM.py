@@ -31,18 +31,23 @@ class LinearSVM:
             
         batch_size : int
             Controls the size of one batch during the mini-batch gradient descent.
+            Works only when thread_count == 1
+
+        epoch_count : int
+            Specifies amount of epochs.
+            Works only when thread_count == 1
         
         show_plot : bool
             If set to True the function plot_margin is called at the end of 
             training. This works for 2-dimensional features only. 
 
-        tqdm_toggle : bool
-            If set to True the training progress will be displayed via tqdm prints. 
-            Not recommended when carrying out hyperparameter search.
+        collect_data : bool
+            If True, collects some intermediate values for losses and accuracies.
+            Otherwise loss and accuracy will have only latest values
     """
 
     def __init__(self, learning_rate=0.5, regularization=0.01, thread_count=1, batch_size=20, epoch_count=30,
-                 show_plot=False):
+                 show_plot=False, collect_data=False):
         self.lr = learning_rate
         self.C = regularization
         self.losses = {}
@@ -53,31 +58,31 @@ class LinearSVM:
         self.thread_count = thread_count
         self.batch_size = batch_size
         self.epoch_count = epoch_count
+        self.collect_data = collect_data
 
     def fit(self, xtrain, ytrain):
-
         # add extra column of 1s to xtrain and weights to account for bias term b
         xtrain = np.c_[xtrain, np.ones(xtrain.shape[0])]
 
         if self.thread_count == 1:
-            #print("Using mini-batch gradient descent ... ") # way to many prints when doing cross validation
+            # print("Using mini-batch gradient descent ... ") # way to many prints when doing cross validation
             self.optimizer = SGD(learning_rate=self.lr,
                                  regularization=self.C,
                                  batch_size=self.batch_size,
                                  epoch_count=self.epoch_count,
                                  loss_function=LinearSVM.hinge_loss,
                                  accuracy_function=LinearSVM.accuracy)
-            self.losses, self.accuracies = self.optimizer.train(xtrain, ytrain)
-            self.runtime = self.optimizer.runtime
-            
         else:
             print("Using parallel gradient descent")
             self.optimizer = ParallelSGD(learning_rate=self.lr,
                                          thread_count=self.thread_count,
                                          regularization=self.C,
                                          loss_function=LinearSVM.hinge_loss,
-                                         accuracy_function=LinearSVM.accuracy)
-            self.losses, self.accuracies = self.optimizer.train(xtrain, ytrain)
+                                         accuracy_function=LinearSVM.accuracy,
+                                         collect_data=self.collect_data)
+
+        self.losses, self.accuracies = self.optimizer.train(xtrain, ytrain)
+        self.runtime = self.optimizer.runtime
 
         if self.show_plot:
             print("\nComputed margins and decision boudary for training set:")

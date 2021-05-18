@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import numpy as np
 
 from DataUtils import DataUtils
@@ -8,7 +8,8 @@ class SGD:
     """ Serial computation the losses and accuarcies per epoch, for a given training set 
         via mini-batch gradient descent. """
 
-    def __init__(self, learning_rate, regularization, batch_size, epoch_count, loss_function, accuracy_function):
+    def __init__(self, learning_rate, regularization, batch_size, epoch_count, loss_function, accuracy_function,
+                 collect_data=False):
         self.learning_rate = learning_rate
         self.weight = None
         self.batch_size = batch_size
@@ -16,6 +17,7 @@ class SGD:
         self.regularization = regularization
         self.loss_function = loss_function
         self.accuracy_function = accuracy_function
+        self.collect_data = collect_data
         self.runtime = None
 
     def train(self, xtrain, ytrain):
@@ -25,7 +27,7 @@ class SGD:
 
         self.weight = np.zeros(xtrain.shape[1])
         learning_rate = self.learning_rate
-        start = datetime.datetime.now() # runtime
+        start = datetime.now()  # runtime
 
         losses, accuracies = [], []
         for epoch in range(self.epoch_count):
@@ -51,11 +53,13 @@ class SGD:
                 # Weights are updated with average gradients after batch is completed
                 self.weight -= learning_rate * grad / self.batch_size
 
-            # Losses & accuracies after one epoch
-            losses.append(self.loss_function(xtrain, ytrain, self.weight))
-            accuracies.append(self.accuracy_function(xtrain, ytrain, self.weight))
+            # Losses & accuracies after one epoch. We always need latest value
+            if self.collect_data or epoch == self.epoch_count - 1:
+                losses.append(self.loss_function(xtrain, ytrain, self.weight))
+                accuracies.append(self.accuracy_function(xtrain, ytrain, self.weight))
 
-        print(f"Finished in {datetime.datetime.now() - start}")
+        self.runtime = datetime.now() - start
+        print(f"Finished in {self.runtime}")
 
         return np.array(losses), np.array(accuracies)
 
