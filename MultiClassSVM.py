@@ -11,11 +11,10 @@ class MultiClassSVM:
     """ SVM that can handle multiple classes by using the multiclass hinge loss. 
         Returns the average accuracies and losses over all classes. """
 
-    def __init__(self, lr=0.1, C=0.001, loss="hinge",
-                 max_iters=5, batch_size=200, tqdm_toggle=False):
+    def __init__(self, lr=0.1, C=0.001, max_iters=5, 
+                 batch_size=200, tqdm_toggle=False):
         self.lr = lr
         self.C = C
-        self.loss = loss
         self.max_iters = max_iters
         self.batch_size = batch_size
         self.tqdm_toggle = tqdm_toggle
@@ -24,15 +23,15 @@ class MultiClassSVM:
         self.weights = None
         self.runtime = None  # in seconds
 
-    def fit(self, xtrain, ytrain, optimizer="minibatchGD"):
+    def fit(self, xtrain, ytrain):
 
         n_samples = len(ytrain)
         classes = np.unique(ytrain).astype(int)
 
-        # add extra column of 1s to xtrain to account for bias term b
+        # Add extra column of 1s to xtrain to account for bias term b
         xtrain = np.c_[xtrain, np.ones(xtrain.shape[0])]
 
-        # build dict containing the weights for each class
+        # Build dict containing the weights for each class
         self.weights = {c: np.zeros(xtrain.shape[1]) for c in classes}
         # self.weights = np.random.normal(size=xtrain.shape[1])
 
@@ -40,11 +39,8 @@ class MultiClassSVM:
         if n_batches < 1:
             raise Exception("Batch size is greater than number of samples!")
 
-        # Perform optimization
-        if optimizer == "minibatchGD":
-            self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr)
-        else:
-            raise Exception("Invalid optimizer!")
+        # Optimization
+        self.losses, self.accuracies = self.minibatchGD(xtrain, ytrain, n_batches, self.lr)
 
         return self
 
@@ -130,6 +126,10 @@ class MultiClassSVM:
     def accuracy(self, features, labels):
         """ compute average classification error
             over all classes """
+            
+        # If function is called externally the 1s for the offset terms are manually added
+        if features.shape[1] != self.weights[0].shape[0]:
+            features = np.c_[features, np.ones(features.shape[0])]
 
         n_correct = 0
         for (x, y) in zip(features, labels):

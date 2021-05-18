@@ -59,7 +59,8 @@ class DataUtils:
 
             # Accuracy score using weights of current clf
             accuracy_scores.append(clf.accuracy(np.c_[xtrain[val_range],
-                                                      np.ones(xtrain[val_range].shape[0])],
-
-                                                ytrain[val_range]))
+                                                np.ones(xtrain[val_range].shape[0])],
+                                               
+                                                ytrain[val_range], 
+                                                clf.optimizer.weight))
         return np.mean(accuracy_scores)
