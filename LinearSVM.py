@@ -73,7 +73,7 @@ class LinearSVM:
         else:
             print("Using parallel gradient descent")
             self.optimizer = ParallelSGD(learning_rate=self.lr,
-                                         thread_count=4,
+                                         thread_count=self.thread_count,
                                          regularization=self.C,
                                          loss_function=LinearSVM.hinge_loss,
                                          accuracy_function=LinearSVM.accuracy)

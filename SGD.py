@@ -7,7 +7,7 @@ from DataUtils import DataUtils
 class SGD:
     """ Serial computation the losses and accuarcies per epoch, for a given training set 
         via mini-batch gradient descent. """
-        
+
     def __init__(self, learning_rate, regularization, batch_size, epoch_count, loss_function, accuracy_function):
         self.learning_rate = learning_rate
         self.weight = None
@@ -40,7 +40,7 @@ class SGD:
                 # Sums up the gradients of the incorrectly classified samples
                 # or the samples that lie within the margin
                 grad = 0
-                for sample, label in zip(xtrain[batch_start:batch_end], 
+                for sample, label in zip(xtrain[batch_start:batch_end],
                                          ytrain[batch_start:batch_end]):
                     prediction = self.predict(sample)
                     if label * prediction < 1:  # either within margin or incorrectly classified
@@ -55,7 +55,7 @@ class SGD:
             losses.append(self.loss_function(xtrain, ytrain, self.weight))
             accuracies.append(self.accuracy_function(xtrain, ytrain, self.weight))
 
-        self.runtime = (datetime.datetime.now() - start).total_seconds()
+        print(f"Finished in {datetime.datetime.now() - start}")
 
         return np.array(losses), np.array(accuracies)
 
@@ -71,6 +71,6 @@ class SGD:
             sample = np.append(sample, 1)
 
         return np.dot(self.weight, sample)
-    
+
     def total_weight(self):
         return self.weight
