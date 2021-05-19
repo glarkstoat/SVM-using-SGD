@@ -61,6 +61,11 @@ class LinearSVM:
         self.collect_data = collect_data
 
     def fit(self, xtrain, ytrain):
+        """
+        Takes training data xtrain (samples) and ytrain (labels) and based on the tread count
+        computes the optimization in a serial or parallel fashion. 
+        """
+        
         # add extra column of 1s to xtrain and weights to account for bias term b
         xtrain = np.c_[xtrain, np.ones(xtrain.shape[0])]
 

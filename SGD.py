@@ -5,7 +5,7 @@ from DataUtils import DataUtils
 
 
 class SGD:
-    """ Serial computation the losses and accuarcies per epoch, for a given training set 
+    """ Serial computation of the losses and accuarcies per epoch, for a given training set 
         via mini-batch gradient descent. """
 
     def __init__(self, learning_rate, regularization, batch_size, epoch_count, loss_function, accuracy_function,
@@ -44,11 +44,10 @@ class SGD:
                 grad = 0
                 for sample, label in zip(xtrain[batch_start:batch_end],
                                          ytrain[batch_start:batch_end]):
+                    
                     prediction = self.predict(sample)
                     if label * prediction < 1:  # either within margin or incorrectly classified
                         grad += self.hinge_gradient(self.weight, sample, label, self.regularization)
-                    """else: ## Technically required but makes results worse and computation longer
-                        grad += 2 * self.regularization * self.weight"""
 
                 # Weights are updated with average gradients after batch is completed
                 self.weight -= learning_rate * grad / self.batch_size
