@@ -71,7 +71,8 @@ class LinearSVM:
                                  batch_size=self.batch_size,
                                  epoch_count=self.epoch_count,
                                  loss_function=LinearSVM.hinge_loss,
-                                 accuracy_function=LinearSVM.accuracy)
+                                 accuracy_function=LinearSVM.accuracy,
+                                 collect_data=self.collect_data)
         else:
             print("Using parallel gradient descent")
             self.optimizer = ParallelSGD(learning_rate=self.lr,
