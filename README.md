@@ -10,7 +10,7 @@
 - Seaborn
 - Tqdm
 
-The DataLoader module assumes that the folder "Datasets" is in the root folder. If that's not the case,
+The DataLoader module assumes that the folder "datasets" is in the root folder. If that's not the case,
 pass your file-path to the DataLoader keyword-argument >path<.
 
 ### Description
