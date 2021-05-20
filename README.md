@@ -11,7 +11,7 @@
 - Tqdm
 
 ### Description
-A comparison of a LinearSVM model using regular vs. Random Fourier Features, including a 
-parallel implementation of the SVM.
+Application and comparison of a LinearSVM model using regular vs. Random Fourier Features on two toydata sets as well
+as the MNIST dataset. Includs a parallel implementation of the SVM + comparison of runtimes.
 
-The included jupyther-notebooks provide all results used in the report.
+The included jupyther-notebooks provide all results used in the report and can be executed using a jupyther environment.
