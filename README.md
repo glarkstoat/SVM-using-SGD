@@ -10,6 +10,9 @@
 - Seaborn
 - Tqdm
 
+The DataLoader module assumes that the folder "Datasets" is in the root folder. If that's not the case,
+pass your file-path to the DataLoader keyword-argument >path<.
+
 ### Description
 Application and comparison of a LinearSVM model using regular vs. Random Fourier Features on two toydata sets as well
 as the MNIST dataset. Includes a parallel implementation of the SVM + comparison of runtimes.
