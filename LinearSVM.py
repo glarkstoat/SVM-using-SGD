@@ -26,8 +26,7 @@ class LinearSVM:
 
         thread_count : int
             If thread_count == 1 the serial SGD is executed.
-            For any other value the parallel SGD is used for optimization with 
-            a default thread_count of 4.
+            For any other value the parallel SGD is used for optimization.
             
         batch_size : int
             Controls the size of one batch during the mini-batch gradient descent.

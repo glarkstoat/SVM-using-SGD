@@ -33,7 +33,6 @@ class MultiClassSVM:
 
         # Build dict containing the weights for each class
         self.weights = {c: np.zeros(xtrain.shape[1]) for c in classes}
-        # self.weights = np.random.normal(size=xtrain.shape[1])
 
         n_batches = int(n_samples / self.batch_size)
         if n_batches < 1:
